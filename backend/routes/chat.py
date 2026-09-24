@@ -30,13 +30,15 @@ async def confirm_action(payload: ConfirmActionRequest):
     """
     User safety gate:
     Confirms and executes (or cancels) a write/modifying action against Jira Cloud.
+    Allows user to pass modified/edited parameters (title, issue_type, priority, etc.).
     """
     try:
         session_id = payload.session_id or "default_user"
         ai_service = AIService(session_id=session_id)
         return await ai_service.execute_confirmed_action(
             action_id=payload.action_id,
-            confirmed=payload.confirmed
+            confirmed=payload.confirmed,
+            modified_parameters=payload.modified_parameters
         )
     except Exception as e:
         logger.error(f"Error executing confirmed action: {e}", exc_info=True)

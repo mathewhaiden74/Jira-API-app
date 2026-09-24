@@ -127,7 +127,7 @@ class AIService:
         # -------------------------------------------------------------
         # 1. WRITE / DESTRUCTIVE ACTIONS -> REQUIRE CONFIRMATION
         # -------------------------------------------------------------
-        write_actions = ["CREATE_ISSUE", "UPDATE_ISSUE", "ASSIGN_ISSUE", "TRANSITION_ISSUE", "ADD_COMMENT"]
+        write_actions = ["CREATE_ISSUE", "CREATE_MULTIPLE_SUBTASKS", "UPDATE_ISSUE", "ASSIGN_ISSUE", "TRANSITION_ISSUE", "ADD_COMMENT"]
         if action in write_actions:
             action_id = str(uuid.uuid4())
             summary_text = self._format_action_summary(action, params)
@@ -137,7 +137,7 @@ class AIService:
                 action_id=action_id,
                 session_id=self.session_id,
                 action=action,
-                issue_key=params.get("issue_key"),
+                issue_key=params.get("issue_key") or params.get("parent_key"),
                 summary_text=summary_text,
                 parameters=params
             )
@@ -145,7 +145,7 @@ class AIService:
             pending = PendingAction(
                 action_id=action_id,
                 action=action,
-                issue_key=params.get("issue_key"),
+                issue_key=params.get("issue_key") or params.get("parent_key"),
                 summary_text=summary_text,
                 parameters=params
             )
@@ -301,8 +301,13 @@ class AIService:
                 timestamp=now_iso
             )
 
-    async def execute_confirmed_action(self, action_id: str, confirmed: bool) -> ChatResponse:
-        """Execute or cancel a pending Jira modification action."""
+    async def execute_confirmed_action(
+        self,
+        action_id: str,
+        confirmed: bool,
+        modified_parameters: Optional[Dict[str, Any]] = None
+    ) -> ChatResponse:
+        """Execute or cancel a pending Jira modification action, with optional user modifications."""
         now_iso = datetime.now(timezone.utc).isoformat()
         pending = oauth_service.get_pending_action(action_id)
 
@@ -326,13 +331,59 @@ class AIService:
 
         action = pending.get("action")
         params = pending.get("parameters", {})
-        issue_key = pending.get("issue_key")
+        if modified_parameters:
+            params.update({k: v for k, v in modified_parameters.items() if v is not None and v != ""})
+
+        issue_key = modified_parameters.get("issue_key") if modified_parameters else None or pending.get("issue_key")
 
         try:
             updated_issue = None
             result_message = ""
 
-            if action == "CREATE_ISSUE":
+            if action == "CREATE_MULTIPLE_SUBTASKS" or (action == "CREATE_ISSUE" and params.get("subtasks")):
+                parent_k = params.get("parent_key")
+                target_proj = parent_k.split("-")[0] if (parent_k and "-" in parent_k) else await self._resolve_project_key(params.get("project_key"), "")
+                subtask_list = params.get("subtasks", [])
+                created_issues = []
+
+                # If parent task creation was requested alongside subtasks
+                if action == "CREATE_ISSUE" and params.get("summary") and not parent_k:
+                    parent_issue = await self.jira_service.create_issue(
+                        project_key=target_proj,
+                        summary=params.get("summary"),
+                        issue_type=params.get("issue_type", "Task"),
+                        description=params.get("description", ""),
+                        priority=params.get("priority", "Medium")
+                    )
+                    created_issues.append(parent_issue)
+                    parent_k = parent_issue.key
+
+                # Create all subtasks in sequence
+                for st in subtask_list:
+                    st_summary = st.get("summary") if isinstance(st, dict) else str(st)
+                    st_prio = st.get("priority", "Medium") if isinstance(st, dict) else "Medium"
+                    if not st_summary or not st_summary.strip():
+                        continue
+                    sub_issue = await self.jira_service.create_issue(
+                        project_key=target_proj,
+                        summary=st_summary.strip(),
+                        issue_type="Subtask",
+                        parent_key=parent_k,
+                        priority=st_prio
+                    )
+                    created_issues.append(sub_issue)
+
+                links_md = "\n".join([f"- [`{iss.key}`]({iss.url}) **{iss.summary}** ({iss.issue_type.name} — *{iss.priority.name}*)" for iss in created_issues])
+                result_message = f"✅ **Successfully created {len(created_issues)} Jira issue(s)** under parent [`{parent_k}`] in 1 click:\n\n{links_md}"
+                return ChatResponse(
+                    role="assistant",
+                    message=result_message,
+                    action=action,
+                    issues=created_issues,
+                    timestamp=now_iso
+                )
+
+            elif action == "CREATE_ISSUE":
                 parent_k = params.get("parent_key")
                 target_proj = parent_k.split("-")[0] if (parent_k and "-" in parent_k) else await self._resolve_project_key(params.get("project_key"), params.get("summary", ""))
                 updated_issue = await self.jira_service.create_issue(
@@ -401,15 +452,34 @@ class AIService:
 
     def _format_action_summary(self, action: str, params: Dict[str, Any]) -> str:
         """Format human-readable summary of the action requiring confirmation."""
-        if action == "CREATE_ISSUE":
+        if action == "CREATE_MULTIPLE_SUBTASKS":
+            subtasks = params.get("subtasks", [])
+            parent_k = params.get("parent_key", "Parent Issue")
+            count = len(subtasks)
+            titles = ", ".join([f'"{s.get("summary") if isinstance(s, dict) else s}"' for s in subtasks[:3]])
+            if count > 3:
+                titles += f" (+{count - 3} more)"
+            return f"Create {count} Subtasks in 1 click under parent '{parent_k}': {titles}"
+        elif action == "CREATE_ISSUE":
             itype = params.get('issue_type', 'Bug')
             parent_k = params.get('parent_key')
             proj_k = params.get('project_key', 'PROJ')
-            if parent_k or itype.lower() in ["subtask", "sub-task"]:
-                return f"Create new Subtask under parent '{parent_k or 'Selected Parent'}' (Project '{proj_k}') with summary: \"{params.get('summary')}\" (Priority: {params.get('priority', 'Medium')})"
+            summary = params.get('summary', '')
+            priority = params.get('priority', 'Medium')
+            description = params.get('description')
+            subtasks = params.get('subtasks')
+            if itype.lower() in ["subtask", "sub-task"]:
+                base = f"Create new Subtask under parent '{parent_k or 'Selected Parent'}' (Project '{proj_k}') with summary: \"{summary}\""
             elif itype.lower() == "epic":
-                return f"Create new Epic in project '{proj_k}' with summary: \"{params.get('summary')}\" (Priority: {params.get('priority', 'Medium')})"
-            return f"Create new {itype} in project '{proj_k}' with summary: \"{params.get('summary')}\" (Priority: {params.get('priority', 'Medium')})"
+                base = f"Create new Epic in project '{proj_k}' with summary: \"{summary}\""
+            else:
+                base = f"Create new {itype} in project '{proj_k}' with summary: \"{summary}\""
+            if subtasks:
+                base += f" + {len(subtasks)} Subtasks"
+            if description:
+                base += f", description: \"{description}\""
+            base += f" (Priority: {priority})"
+            return base
         elif action == "UPDATE_ISSUE":
             return f"Update issue {params.get('issue_key')} fields: {json.dumps(params.get('fields', {}))}"
         elif action == "ASSIGN_ISSUE":

@@ -1098,6 +1098,317 @@ body {
   to { transform: rotate(360deg); }
 }
 
+/* Confirmation & Safety Gate Interactive Editor */
+.confirmation-card {
+  margin-top: 14px;
+  background: #161b22;
+  border: 1.5px solid rgba(255, 171, 0, 0.45);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  animation: slideUp 0.25s ease-out;
+}
+
+.confirmation-card.interactive-gate {
+  border-color: rgba(255, 171, 0, 0.55);
+}
+
+.confirmation-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: rgba(255, 171, 0, 0.08);
+  border-bottom: 1px solid rgba(255, 171, 0, 0.2);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #ffc400;
+}
+
+.gate-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.action-tag {
+  font-size: 0.72rem;
+  font-family: var(--font-mono);
+  background: rgba(88, 166, 255, 0.15);
+  color: #58a6ff;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(88, 166, 255, 0.3);
+}
+
+.confirmation-editor-body {
+  padding: 14px;
+  background: #0d1117;
+}
+
+.edit-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.form-field.full-width {
+  grid-column: 1 / -1;
+}
+
+.field-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.field-hint {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+.edit-input, .edit-select, .edit-textarea {
+  width: 100%;
+  background: #161b22;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+  font-size: 0.85rem;
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  transition: var(--transition);
+  outline: none;
+}
+
+.edit-input:focus, .edit-select:focus, .edit-textarea:focus {
+  border-color: var(--jira-blue);
+  box-shadow: 0 0 0 2px var(--jira-blue-glow);
+  background: #1c2128;
+}
+
+.edit-input.title-input {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: #58a6ff;
+  border-color: rgba(88, 166, 255, 0.35);
+  background: rgba(88, 166, 255, 0.04);
+}
+
+.edit-input.highlight-parent {
+  border-color: rgba(101, 84, 192, 0.5);
+  color: #b388ff;
+  font-family: var(--font-mono);
+}
+
+.select-with-icon {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #161b22;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 0 10px;
+}
+
+.select-with-icon .edit-select {
+  border: none;
+  padding-left: 0;
+  background: transparent;
+}
+
+.confirmation-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 10px 14px;
+  background: #161b22;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.btn-cancel {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+  background: #21262d;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.btn-cancel:hover {
+  background: #30363d;
+  color: var(--text-primary);
+}
+
+.btn-confirm {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 16px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  border: 1px solid #238636;
+  background: #238636;
+  color: white;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.btn-confirm:hover {
+  background: #2ea043;
+  box-shadow: 0 0 12px rgba(46, 160, 67, 0.4);
+}
+
+/* Multi-Subtask Batch Builder */
+.subtasks-batch-container {
+  margin-top: 6px;
+  background: rgba(22, 27, 34, 0.85);
+  border: 1px solid rgba(88, 166, 255, 0.25);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+}
+
+.subtasks-batch-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.batch-title {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #58a6ff;
+}
+
+.btn-preset-stack {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.72rem;
+  font-weight: 500;
+  padding: 3px 8px;
+  background: rgba(163, 113, 247, 0.15);
+  color: #d2a8ff;
+  border: 1px solid rgba(163, 113, 247, 0.3);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.btn-preset-stack:hover {
+  background: rgba(163, 113, 247, 0.25);
+  border-color: #d2a8ff;
+}
+
+.subtask-rows-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.subtask-edit-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #0d1117;
+  padding: 6px 8px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  animation: fadeIn 0.2s ease-out;
+}
+
+.subtask-num {
+  font-size: 0.72rem;
+  font-weight: 600;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+  width: 22px;
+  flex-shrink: 0;
+  text-align: center;
+}
+
+.subtask-title-input {
+  flex: 1;
+  font-size: 0.82rem;
+  background: transparent;
+  border: none;
+  padding: 4px 6px;
+}
+
+.subtask-title-input:focus {
+  background: rgba(88, 166, 255, 0.05);
+  box-shadow: none;
+}
+
+.subtask-prio-select {
+  width: 120px;
+  flex-shrink: 0;
+  font-size: 0.78rem;
+  padding: 4px 6px;
+  background: #161b22;
+}
+
+.btn-remove-subtask {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+  flex-shrink: 0;
+}
+
+.btn-remove-subtask:hover {
+  color: #ff7b72;
+  background: rgba(248, 81, 73, 0.15);
+}
+
+.btn-add-subtask-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  justify-content: center;
+  padding: 6px 12px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: #58a6ff;
+  background: rgba(88, 166, 255, 0.08);
+  border: 1px dashed rgba(88, 166, 255, 0.35);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.btn-add-subtask-row:hover {
+  background: rgba(88, 166, 255, 0.15);
+  border-color: #58a6ff;
+}
+
 /* Responsive adjustments */
 @media (max-width: 860px) {
   .sidebar {
@@ -1113,5 +1424,8 @@ body {
   }
   .metrics-row {
     grid-template-columns: repeat(2, 1fr);
+  }
+  .edit-form-grid {
+    grid-template-columns: 1fr;
   }
 }

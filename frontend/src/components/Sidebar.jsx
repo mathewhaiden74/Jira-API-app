@@ -30,6 +30,7 @@ export default function Sidebar({
     { label: 'My P0/P1 Bugs', prompt: `Show P0 and P1 bugs assigned to me in ${projKey}.`, icon: <Bug size={15} color="#ff5630" /> },
     { label: 'Create Epic', prompt: `Create an epic for Core Platform Architecture in ${projKey}.`, icon: <Layers size={15} color="#0052cc" /> },
     { label: 'Create Subtask', prompt: `Create a subtask for ${exampleIssue1} with summary: Implement unit test coverage.`, icon: <Plus size={15} color="#36b37e" /> },
+    { label: 'Breakdown Subtasks', prompt: `Break down ${exampleIssue1} into subtasks: 1. DB Schema 2. Backend API 3. Frontend UI 4. QA Tests.`, icon: <Sparkles size={15} color="#58a6ff" /> },
     { label: 'Sprint Summary', prompt: `Give me a summary of this sprint for ${projKey}.`, icon: <BarChart3 size={15} color="#0B66E4" /> },
     { label: 'Generate Test Cases', prompt: `Generate test cases for ${exampleIssue2}.`, icon: <Sparkles size={15} color="#a371f7" /> },
     { label: 'Bug Analysis', prompt: `Analyze bugs from this sprint in ${projKey}.`, icon: <BarChart3 size={15} color="#36b37e" /> },

@@ -66,13 +66,14 @@ export const api = {
     });
   },
 
-  async confirmAction(actionId, confirmed, sessionId = 'default_user') {
+  async confirmAction(actionId, confirmed, sessionId = 'default_user', modifiedParameters = null) {
     return request('/chat/confirm', {
       method: 'POST',
       body: JSON.stringify({
         action_id: actionId,
         confirmed,
         session_id: sessionId,
+        modified_parameters: modifiedParameters,
       }),
     });
   },

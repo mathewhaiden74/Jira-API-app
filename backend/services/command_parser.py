@@ -27,6 +27,7 @@ GENERAL_QUESTION_SIGNALS = [
 STRONG_JIRA_ACTION_SIGNALS = [
     "create a bug", "create a task", "create a story", "create an epic", "create epic",
     "create a subtask", "create subtask", "create a sub-task", "create sub-task",
+    "create subtasks", "create multiple subtasks", "add subtasks",
     "add a subtask", "add subtask", "add an epic", "add epic", "file an epic",
     "file a bug", "open a bug", "add a bug", "update priority", "change priority",
     "assign ", "move to", "transition to",
@@ -161,6 +162,52 @@ class CommandParser:
                 "parameters": {
                     "issue_key": comment_match.group(1).upper(),
                     "body": comment_match.group(2).strip()
+                }
+            }
+
+        # 8b. CREATE MULTIPLE SUBTASKS
+        # Examples:
+        # "Create subtasks for KAN-1: 1. Setup DB 2. Build API 3. Write tests"
+        # "Create multiple subtasks under KAN-1"
+        # "Break down KAN-1 into subtasks"
+        multi_subtask_match = re.search(
+            r'(?:create|add|make|file|generate)\s+(?:multiple\s+|several\s+)?sub-?tasks\s+(?:for|to|under|in)\s+([A-Za-z0-9]+-\d+)(?:\s*[:\-]?\s*(.+))?',
+            t, re.IGNORECASE | re.DOTALL
+        )
+        break_down_match = re.search(
+            r'break\s+down\s+([A-Za-z0-9]+-\d+)\s+into\s+(?:sub-?tasks?|tasks)',
+            t, re.IGNORECASE
+        )
+        if multi_subtask_match or break_down_match:
+            key_m = break_down_match or multi_subtask_match
+            parent_key = key_m.group(1).upper()
+            raw_tasks = multi_subtask_match.group(2).strip() if (multi_subtask_match and len(multi_subtask_match.groups()) >= 2 and multi_subtask_match.group(2)) else ""
+            
+            subtask_objects = []
+            if raw_tasks:
+                items = re.split(r'(?:\r?\n|;|\b\d+[\.\)]|\s*[\-\*]\s*)', raw_tasks)
+                for item in items:
+                    clean_item = re.sub(r'^(?:and|or|\d+[\.\)]|\s*[\-\*])\s*', '', item, flags=re.IGNORECASE).strip().rstrip('.')
+                    if clean_item and len(clean_item) > 2:
+                        subtask_objects.append({"summary": clean_item.capitalize(), "priority": "Medium"})
+            
+            if not subtask_objects:
+                # Standard comprehensive breakdown presets
+                subtask_objects = [
+                    {"summary": f"Backend API & Logic for {parent_key}", "priority": "High"},
+                    {"summary": f"Frontend UI Implementation for {parent_key}", "priority": "Medium"},
+                    {"summary": f"Integration Testing & QA Verification for {parent_key}", "priority": "Medium"},
+                    {"summary": f"Documentation & Release Review for {parent_key}", "priority": "Low"}
+                ]
+
+            proj_from_key = parent_key.split("-")[0] if "-" in parent_key else default_proj
+            return {
+                "action": "CREATE_MULTIPLE_SUBTASKS",
+                "parameters": {
+                    "project_key": proj_from_key,
+                    "parent_key": parent_key,
+                    "subtasks": subtask_objects,
+                    "priority": "High" if any(p in t_lower for p in ["critical", "p0", "p1"]) else "Medium"
                 }
             }
 

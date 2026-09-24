@@ -63,10 +63,10 @@ export default function App() {
     }
   };
 
-  const handleConfirmAction = async (actionId, confirmed) => {
+  const handleConfirmAction = async (actionId, confirmed, modifiedParameters = null) => {
     setLoading(true);
     try {
-      const response = await api.confirmAction(actionId, confirmed);
+      const response = await api.confirmAction(actionId, confirmed, 'default_user', modifiedParameters);
       setMessages((prev) => [...prev, response]);
     } catch (err) {
       console.error('Confirm error:', err);
