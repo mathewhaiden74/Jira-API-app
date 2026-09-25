@@ -25,7 +25,8 @@ Supported Actions:
 1. SEARCH_ISSUES: parameters {"jql": "valid Jira JQL string"}
 2. GET_ISSUE: parameters {"issue_key": "PROJ-123"}
 3. CREATE_ISSUE: parameters {"project_key": "PROJ", "summary": "...", "issue_type": "Bug"|"Story"|"Task"|"Epic"|"Subtask", "description": "...", "priority": "High"|"Medium"|"Low", "parent_key": "PROJ-123" (required for Subtask)}
-4. UPDATE_ISSUE: parameters {"issue_key": "PROJ-123", "fields": {"priority": "...", "summary": "...", "description": "..."}}
+4. CREATE_MULTIPLE_SUBTASKS: parameters {"parent_key": "PROJ-123", "subtasks": ["Subtask summary 1", "Subtask summary 2", "Subtask summary 3"], "priority": "High"|"Medium"|"Low"}
+5. UPDATE_ISSUE: parameters {"issue_key": "PROJ-123", "fields": {"priority": "...", "summary": "...", "description": "..."}}
 5. ASSIGN_ISSUE: parameters {"issue_key": "PROJ-123", "assignee": "Mathew"}
 6. TRANSITION_ISSUE: parameters {"issue_key": "PROJ-123", "status": "In Progress"|"Done"|"To Do"}
 7. ADD_COMMENT: parameters {"issue_key": "PROJ-123", "body": "..."}

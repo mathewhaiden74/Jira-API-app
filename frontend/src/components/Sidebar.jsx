@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
-  Plus, MessageSquare, Layers, ShieldCheck, 
-  Sparkles, Bug, BarChart3, Search, LogIn, LogOut, CheckCircle2, ChevronDown 
+  Plus, MessageSquare, Layers,
+  Sparkles, Bug, BarChart3, Search, LogIn, LogOut
 } from 'lucide-react';
+import ConnectJiraModal from './ConnectJiraModal';
 
 export default function Sidebar({
   authStatus,
@@ -15,6 +16,7 @@ export default function Sidebar({
   onLogout,
   onToggleDemo
 }) {
+  const [showConnectModal, setShowConnectModal] = useState(false);
   const isAuth = authStatus?.is_authenticated;
   const isDemo = authStatus?.is_mock_mode;
   const user = authStatus?.user;
@@ -138,13 +140,29 @@ export default function Sidebar({
               <span>Disconnect Jira</span>
             </button>
           ) : (
-            <button className="btn-auth-action connect" onClick={onLogin}>
-              <LogIn size={13} />
-              <span>Connect Jira Cloud</span>
-            </button>
+            <>
+              <button className="btn-auth-action connect" onClick={() => setShowConnectModal(true)}>
+                <LogIn size={13} />
+                <span>Connect Jira Cloud</span>
+              </button>
+              {!isAuth && (
+                <button
+                  className="btn-auth-action"
+                  style={{ background: 'transparent', border: '1px solid var(--border-subtle)', color: 'var(--text-secondary)', marginTop: 4 }}
+                  onClick={onToggleDemo}
+                >
+                  <Sparkles size={13} />
+                  <span>Try Demo Mode</span>
+                </button>
+              )}
+            </>
           )}
         </div>
       </div>
+
+      {showConnectModal && (
+        <ConnectJiraModal onClose={() => setShowConnectModal(false)} />
+      )}
     </aside>
   );
 }

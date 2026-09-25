@@ -53,6 +53,10 @@ export default function Chat({
 
   const promptExamples = [
     {
+      category: 'Create Multiple Subtasks (1-Click)',
+      text: `Create subtasks for ${exampleIssue1}: 1. Implement token validation 2. Write unit tests 3. Add API documentation`,
+    },
+    {
       category: 'Create Subtask',
       text: `Create a subtask for ${exampleIssue1} with summary: Implement token validation.`,
     },

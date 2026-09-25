@@ -1,6 +1,7 @@
 import logging
-from fastapi import APIRouter, HTTPException, Query, Response, status
+from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import RedirectResponse
+from pydantic import BaseModel
 from typing import Optional
 
 from config import settings
@@ -9,6 +10,29 @@ from services.oauth_service import oauth_service
 
 logger = logging.getLogger("jira_assistant.routes.auth")
 router = APIRouter(prefix="/auth", tags=["Authentication"])
+
+
+class OAuthConfigPayload(BaseModel):
+    client_id: str
+    client_secret: str
+
+
+@router.post("/configure", summary="Set Atlassian OAuth 2.0 credentials at runtime")
+async def configure_oauth(payload: OAuthConfigPayload):
+    """
+    Allows users to provide their own Atlassian OAuth Client ID and Secret
+    without restarting the server. Updates the in-memory settings used for
+    the current process.
+    """
+    if not payload.client_id.strip() or not payload.client_secret.strip():
+        raise HTTPException(status_code=400, detail="client_id and client_secret must not be empty")
+
+    settings.ATLASSIAN_CLIENT_ID = payload.client_id.strip()
+    settings.ATLASSIAN_CLIENT_SECRET = payload.client_secret.strip()
+
+    logger.info(f"OAuth credentials updated via /auth/configure (client_id=...{payload.client_id[-6:]})")
+    return {"status": "ok", "message": "Credentials saved. Proceed to /auth/login to authorize."}
+
 
 @router.get("/login", summary="Initiate Atlassian Jira OAuth 2.0 (3LO) flow")
 async def login(session_id: str = Query(default="default_user")):
